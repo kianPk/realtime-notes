@@ -6,6 +6,14 @@ Shared notepad — **Socket.IO** + **Vue 3**.
 [![Socket.IO](https://img.shields.io/badge/realtime-socket.io-010101?style=flat-square)](./server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-0f1a22?style=flat-square)](./LICENSE)
 
+## Features
+
+- Live collaborative notepad (Socket.IO)
+- Presence count per room
+- Editable room title
+- `GET /api/rooms/:id` export
+- Edit rate-limit (20/s per socket)
+
 ## Quick start
 
 ```bash

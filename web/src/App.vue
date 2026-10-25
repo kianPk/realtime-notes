@@ -3,8 +3,10 @@ import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { io } from "socket.io-client";
 
 const room = ref("demo");
+const title = ref("demo");
 const text = ref("");
 const status = ref("connecting");
+const presence = ref(0);
 let socket;
 let applyingRemote = false;
 
@@ -13,6 +15,9 @@ onMounted(() => {
   socket.on("connect", () => { status.value = "live"; socket.emit("join", room.value); });
   socket.on("disconnect", () => { status.value = "offline"; });
   socket.on("doc", (doc) => { applyingRemote = true; text.value = doc; applyingRemote = false; });
+  socket.on("title", (payload) => { title.value = payload?.title || room.value; });
+  socket.on("presence", (payload) => { presence.value = payload?.count || 0; });
+  socket.on("rate-limited", () => { status.value = "rate-limited"; setTimeout(() => { if (socket?.connected) status.value = "live"; }, 800); });
 });
 
 onBeforeUnmount(() => socket?.disconnect());
@@ -23,15 +28,20 @@ watch(text, (v) => {
 });
 
 watch(room, (r) => socket?.emit("join", r));
+
+function saveTitle() {
+  socket?.emit("edit-title", { roomId: room.value, title: title.value });
+}
 </script>
 
 <template>
   <div class="page">
     <header>
       <h1>Realtime Notes</h1>
-      <span class="pill">{{ status }}</span>
+      <span class="pill">{{ status }} · {{ presence }} online</span>
     </header>
     <label>Room <input v-model="room" /></label>
+    <label>Title <input v-model="title" @change="saveTitle" /></label>
     <textarea v-model="text" rows="16" placeholder="Type — others see it live…"></textarea>
   </div>
 </template>
